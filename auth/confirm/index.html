@@ -201,6 +201,7 @@
   // paint the theme immediately so even the loading state is on-brand
   applyTheme(urlTheme || "standard");
 
+  try {
   // 1) Implicit success — session returned in the fragment.
   if(hash.access_token){ done("success", decodeJwt(hash.access_token)); return; }
 
@@ -228,6 +229,17 @@
 
   // 4) Opened directly, no parameters.
   fail("Nothing to confirm here.","Please open the confirmation link from your BTLR email on this device.");
+  } catch(e) {
+    // Never leave the page blank. If a session token is present the account
+    // was confirmed regardless, so show success; otherwise a generic recovery.
+    if(hash.access_token){
+      applyTheme(urlTheme||"standard");
+      try{ document.getElementById("success-title").textContent = "You're all set."; }catch(_){}
+      show("success");
+    } else {
+      fail("Something went wrong.","Please reopen the confirmation link from your BTLR email.");
+    }
+  }
 })();
 </script>
 </body>
