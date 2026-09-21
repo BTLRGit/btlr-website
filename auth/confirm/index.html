@@ -217,7 +217,12 @@
   var err=hash.error||query.error||hash.error_code||query.error_code;
   if(err){
     var d=hash.error_description||query.error_description||"";
-    var expired=/expired|otp_expired/i.test(err+" "+d);
+    // 21 Sep 2026: test every error field. GoTrue sends error=access_denied
+    // WITH error_code=otp_expired; keying off `err` alone showed the generic
+    // "couldn't confirm" copy instead of "this link has expired".
+    var blob=[hash.error,query.error,hash.error_code,query.error_code,
+              hash.error_description,query.error_description,d].join(" ");
+    var expired=/expired|otp_expired/i.test(blob);
     fail(expired?"This link has expired.":"We couldn't confirm this link.",
          expired?"Confirmation links are valid for a limited time. Open the BTLR app and request a new one."
                 :(d?d.replace(/\+/g," "):"The link may be invalid or already used. Open the BTLR app and request a new one."));

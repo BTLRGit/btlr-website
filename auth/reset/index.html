@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="robots" content="noindex" />
+<meta name="color-scheme" content="dark" />
+<title>Reset your password · BTLR</title>
+<link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+<style>
+  /* ---- BTLR confirm / verify landing. Dark identity, tier-aware accent. ----
+     Accent vars are set at runtime by resolveTheme() from ?theme= or a token
+     claim (standard=mint, advanced=champagne, superior/whiteglove=teal),
+     matching BTLRThemeManager. Everything paints through the vars so this one
+     page can serve confirmation, password-reset, magic-link, etc. */
+  :root{
+    --ground:#000000;
+    --glow:#0e1210;
+    --ink:#F5F7F6;
+    --muted:#8A9490;
+    --tagline:#DBDFE6;
+    --line:rgba(237,239,238,.08);
+    --field:rgba(255,255,255,.035);
+    --rose:#E0796B;
+    --rose-soft:rgba(224,121,107,.12);
+    --radius:16px;
+    /* --- accent (overridden by resolveTheme; defaults = standard/mint) --- */
+    --accent:#4FC6A0;
+    --accent-soft:rgba(79,198,160,.14);
+    --accent-line:rgba(79,198,160,.30);
+    --accent-glow:rgba(79,198,160,.55);
+    --accent-ink:#04120d;
+    --grad-a:#6fd6b6;
+    --grad-b:#4FC6A0;
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{
+    margin:0;
+    background:
+      radial-gradient(120% 80% at 50% -10%, var(--glow) 0%, #050605 34%, var(--ground) 70%) fixed,
+      var(--ground);
+    color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
+    -webkit-font-smoothing:antialiased;
+    text-rendering:optimizeLegibility;
+    display:flex;min-height:100dvh;align-items:center;justify-content:center;
+    padding:32px 22px calc(32px + env(safe-area-inset-bottom));
+  }
+  .wrap{width:100%;max-width:400px;text-align:center;animation:rise .7s cubic-bezier(.2,.7,.2,1) both}
+  @keyframes rise{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+
+  .wordmark{font-weight:800;font-size:52px;letter-spacing:.16em;margin:0 0 2px;padding-left:.16em;color:#fff}
+  .tagline{font-family:"Snell Roundhand","Apple Chancery","Segoe Script","Brush Script MT",cursive;
+    font-size:26px;font-weight:500;color:var(--tagline);margin:0 0 44px;opacity:.92}
+
+  .glyph{
+    width:76px;height:76px;margin:0 auto 26px;border-radius:50%;display:grid;place-items:center;
+    background:var(--accent-soft);border:1px solid var(--accent-line);
+    box-shadow:0 14px 40px -14px var(--accent-glow);
+    animation:pop .55s cubic-bezier(.2,.8,.2,1.2) .12s both;
+  }
+  .glyph.err{background:var(--rose-soft);border-color:rgba(224,121,107,.32);box-shadow:0 14px 40px -16px rgba(224,121,107,.4)}
+  @keyframes pop{from{opacity:0;transform:scale(.7)}to{opacity:1;transform:scale(1)}}
+  .glyph svg{width:38px;height:38px;overflow:visible}
+  .glyph path,.glyph line{
+    stroke:var(--accent);stroke-width:3.2;stroke-linecap:round;stroke-linejoin:round;fill:none;
+    stroke-dasharray:56;stroke-dashoffset:56;animation:draw .55s ease .34s forwards;
+  }
+  .glyph.err path,.glyph.err line{stroke:var(--rose)}
+  .spin{width:30px;height:30px;border-radius:50%;border:2.5px solid rgba(255,255,255,.12);border-top-color:var(--accent);animation:rot .8s linear infinite}
+  @keyframes rot{to{transform:rotate(360deg)}}
+  @keyframes draw{to{stroke-dashoffset:0}}
+
+  h1{font-size:23px;font-weight:700;letter-spacing:-.01em;margin:0 0 10px;text-wrap:balance}
+  p.sub{font-size:15.5px;line-height:1.55;color:var(--muted);margin:0 auto;max-width:34ch}
+  .name{color:var(--accent)}
+
+  .cta{
+    display:inline-flex;align-items:center;justify-content:center;gap:8px;width:100%;margin-top:34px;
+    padding:17px 20px;border:none;border-radius:var(--radius);cursor:pointer;
+    font-size:16px;font-weight:600;font-family:inherit;color:var(--accent-ink);
+    background:linear-gradient(180deg,var(--grad-a),var(--grad-b));
+    box-shadow:0 0 34px -6px var(--accent-glow), inset 0 1px 0 rgba(255,255,255,.28);
+    text-decoration:none;transition:transform .12s ease, box-shadow .2s ease;
+  }
+  .cta:hover{transform:translateY(-1px);box-shadow:0 0 44px -4px var(--accent-glow)}
+  .cta:active{transform:translateY(0)}
+  .cta:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+
+  .hint{margin-top:18px;font-size:13px;color:var(--muted);line-height:1.5}
+  .foot{margin-top:52px;font-size:11.5px;letter-spacing:.06em;color:rgba(138,148,144,.6);text-transform:uppercase}
+
+  [hidden]{display:none!important}
+  @media (prefers-reduced-motion:reduce){*{animation:none!important}.glyph path,.glyph line{stroke-dashoffset:0}}
+</style>
+<style>
+  /* reset-specific additions — everything else is shared with /auth/confirm */
+  .field{text-align:left;margin-top:18px}
+  .field label{display:block;font-size:12.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:0 0 7px}
+  .field input{
+    width:100%;padding:15px 16px;border-radius:var(--radius);
+    background:var(--field);border:1px solid var(--line);color:var(--ink);
+    font-size:16px;font-family:inherit;-webkit-appearance:none;
+  }
+  .field input:focus{outline:none;border-color:var(--accent-line);box-shadow:0 0 0 3px var(--accent-soft)}
+  .rule{margin-top:10px;font-size:12.5px;color:var(--muted);line-height:1.5}
+  .rule.bad{color:var(--rose)}
+  .cta[disabled]{opacity:.45;cursor:not-allowed;box-shadow:none}
+</style>
+</head>
+<body>
+  <main class="wrap">
+    <div class="wordmark">BTLR</div>
+    <div class="tagline">Lifestyle Ownership</div>
+
+    <section id="state-loading">
+      <div class="glyph" style="background:transparent;border:none;box-shadow:none"><div class="spin"></div></div>
+      <h1>Checking your link…</h1>
+      <p class="sub">One moment.</p>
+    </section>
+
+    <section id="state-form" hidden>
+      <h1 id="form-title">Choose a new password</h1>
+      <p class="sub">Pick something you haven't used before. You'll sign in with it straight away.</p>
+      <form id="pw-form" autocomplete="on">
+        <div class="field">
+          <label for="pw1">New password</label>
+          <input id="pw1" type="password" autocomplete="new-password" minlength="8" required />
+        </div>
+        <div class="field">
+          <label for="pw2">Confirm password</label>
+          <input id="pw2" type="password" autocomplete="new-password" minlength="8" required />
+        </div>
+        <p class="rule" id="rule">At least 8 characters.</p>
+        <button class="cta" id="submit" type="submit" disabled>Update password</button>
+      </form>
+    </section>
+
+    <section id="state-success" hidden>
+      <div class="glyph"><svg viewBox="0 0 40 40" aria-hidden="true"><path d="M9 21 L17 29 L31 12" /></svg></div>
+      <h1 id="success-title">Password updated.</h1>
+      <p class="sub">You can sign in with your new password now.</p>
+      <a class="cta" href="btlr://login">Open BTLR</a>
+      <p class="hint">If the button doesn't open the app, switch back to BTLR and sign in.</p>
+    </section>
+
+    <section id="state-error" hidden>
+      <div class="glyph err"><svg viewBox="0 0 40 40" aria-hidden="true"><line x1="12" y1="12" x2="28" y2="28"/><line x1="28" y1="12" x2="12" y2="28"/></svg></div>
+      <h1 id="error-title">This link has expired.</h1>
+      <p class="sub" id="error-sub">Password-reset links are valid for a limited time. Open the BTLR app and request a new one.</p>
+      <a class="cta" href="btlr://login">Open BTLR</a>
+    </section>
+
+    <div class="foot">© BTLR · btlr.vip</div>
+  </main>
+<script>
+(function(){
+  "use strict";
+  var AUTH_BASE = "https://btlr-auth.typed.info";
+
+  // Shared with /auth/confirm — tier palettes mirror BTLRThemeManager.
+  var THEMES = {
+    standard: {accent:"#4FC6A0", soft:"rgba(79,198,160,.14)", line:"rgba(79,198,160,.30)", glow:"rgba(79,198,160,.55)", ink:"#04120d", gradA:"#6fd6b6", gradB:"#4FC6A0", glowbg:"#0e1210"},
+    advanced: {accent:"#CBAE72", soft:"rgba(203,174,114,.15)", line:"rgba(203,174,114,.32)", glow:"rgba(203,174,114,.5)",  ink:"#1a1405", gradA:"#ddc48f", gradB:"#CBAE72", glowbg:"#12100a"},
+    superior: {accent:"#2C6E74", soft:"rgba(44,110,116,.20)",  line:"rgba(44,110,116,.40)",  glow:"rgba(44,110,116,.55)",  ink:"#F5F7F6", gradA:"#3d8a91", gradB:"#2C6E74", glowbg:"#0a1213"}
+  };
+  var ALIAS = {whiteglove:"superior", engage:"standard", "btlr engage":"standard"};
+  function applyTheme(name){
+    name = ALIAS[String(name||"").toLowerCase().trim()] || String(name||"").toLowerCase().trim();
+    var t = THEMES[name] || THEMES.standard, r = document.documentElement.style;
+    r.setProperty("--accent",t.accent); r.setProperty("--accent-soft",t.soft);
+    r.setProperty("--accent-line",t.line); r.setProperty("--accent-glow",t.glow);
+    r.setProperty("--accent-ink",t.ink); r.setProperty("--grad-a",t.gradA);
+    r.setProperty("--grad-b",t.gradB); r.setProperty("--glow",t.glowbg);
+  }
+  function params(str){
+    var o={}; (str||"").replace(/^[#?]/,"").split("&").forEach(function(kv){
+      if(!kv) return; var i=kv.indexOf("=");
+      o[decodeURIComponent(i<0?kv:kv.slice(0,i))] = i<0?"":decodeURIComponent(kv.slice(i+1).replace(/\+/g," "));
+    }); return o;
+  }
+  function decodeJwt(t){
+    try{ var p=t.split("."); if(p.length<2) return null;
+      var b=p[1].replace(/-/g,"+").replace(/_/g,"/"); while(b.length%4) b+="=";
+      return JSON.parse(decodeURIComponent(escape(atob(b)))); }catch(e){ return null; }
+  }
+  // NOTE: takes the SHORT state name and normalises. The confirm page shipped with
+  // this comparing short names against full element ids, which hid every section
+  // and rendered a blank card — do not reintroduce that.
+  function show(id){
+    var want = String(id).indexOf("state-")===0 ? String(id) : "state-"+id;
+    ["state-loading","state-form","state-success","state-error"].forEach(function(s){
+      document.getElementById(s).hidden = (s !== want);
+    });
+  }
+  function fail(title,sub){
+    if(title) document.getElementById("error-title").textContent=title;
+    if(sub) document.getElementById("error-sub").textContent=sub;
+    show("error");
+  }
+
+  var hash=params(location.hash), query=params(location.search);
+  var urlTheme = query.theme || hash.theme || "";
+  applyTheme(urlTheme || "standard");
+
+  var token = hash.access_token || "";
+  var claims = token ? decodeJwt(token) : null;
+
+  try {
+    var err = hash.error || query.error || hash.error_code || query.error_code;
+    if(err){
+      var d = hash.error_description || query.error_description || "";
+      // Test EVERY error field, not just the first truthy one: GoTrue sends
+      // error=access_denied WITH error_code=otp_expired, and short-circuiting
+      // on `error` alone meant the expiry case fell through to the generic copy.
+      var blob = [hash.error,query.error,hash.error_code,query.error_code,
+                  hash.error_description,query.error_description,d].join(" ");
+      var expired = /expired|otp_expired/i.test(blob);
+      fail(expired ? "This link has expired." : "We couldn't verify this link.",
+           expired ? "Password-reset links are valid for a limited time. Open the BTLR app and request a new one."
+                   : (d ? d.replace(/\+/g," ") : "The link may be invalid or already used. Request a new one from the app."));
+      return;
+    }
+    // token_hash in the query → let GoTrue verify server-side, then it bounces
+    // back here with the session in the fragment (no CORS needed).
+    var th = query.token_hash || query.token;
+    if(th && !token){
+      var back = location.origin + location.pathname + (urlTheme ? ("?theme="+encodeURIComponent(urlTheme)) : "");
+      location.replace(AUTH_BASE+"/verify?token="+encodeURIComponent(th)+
+                       "&type="+encodeURIComponent(query.type||"recovery")+
+                       "&redirect_to="+encodeURIComponent(back));
+      return;
+    }
+    if(!token){
+      fail("Nothing to reset here.","Open the password-reset link from your BTLR email on this device.");
+      return;
+    }
+    applyTheme(urlTheme || (claims && claims.user_metadata && claims.user_metadata.theme) || "standard");
+    show("form");
+  } catch(e){
+    fail("Something went wrong.","Please reopen the reset link from your BTLR email.");
+    return;
+  }
+
+  // ---- form ----
+  var pw1=document.getElementById("pw1"), pw2=document.getElementById("pw2"),
+      rule=document.getElementById("rule"), submit=document.getElementById("submit");
+  function validate(){
+    var a=pw1.value, b=pw2.value, ok=true, msg="At least 8 characters.";
+    if(a.length && a.length<8){ ok=false; msg="Too short — at least 8 characters."; }
+    else if(b.length && a!==b){ ok=false; msg="Passwords don't match."; }
+    else if(a.length>=8 && a===b){ msg="Looks good."; }
+    rule.textContent=msg; rule.className = ok ? "rule" : "rule bad";
+    submit.disabled = !(a.length>=8 && a===b);
+  }
+  pw1.addEventListener("input",validate); pw2.addEventListener("input",validate);
+
+  document.getElementById("pw-form").addEventListener("submit",function(ev){
+    ev.preventDefault();
+    if(submit.disabled) return;
+    submit.disabled=true; submit.textContent="Updating…";
+    fetch(AUTH_BASE+"/user",{
+      method:"PUT",
+      headers:{"Content-Type":"application/json","Authorization":"Bearer "+token},
+      body:JSON.stringify({password:pw1.value})
+    }).then(function(r){
+      if(r.ok) return r.json();
+      return r.json().catch(function(){return {};}).then(function(j){
+        throw new Error(j.msg || j.error_description || j.error || ("HTTP "+r.status));
+      });
+    }).then(function(){
+      show("success");
+    }).catch(function(e){
+      submit.disabled=false; submit.textContent="Update password";
+      rule.textContent = String(e.message||e); rule.className="rule bad";
+    });
+  });
+})();
+</script>
+</body>
+</html>
