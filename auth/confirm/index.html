@@ -165,7 +165,15 @@
       return JSON.parse(decodeURIComponent(escape(atob(b)))); }catch(e){ return null; }
   }
   function esc(s){ return String(s).replace(/[&<>"]/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c];}); }
-  function show(id){ ["state-loading","state-success","state-error"].forEach(function(s){document.getElementById(s).hidden=(s!==id);}); }
+  // Accepts either the short name ("success") or the full element id
+  // ("state-success"). Callers pass the short form; comparing it directly
+  // against the ids hid ALL three sections and rendered a blank card.
+  function show(id){
+    var want = String(id).indexOf("state-") === 0 ? String(id) : "state-" + id;
+    ["state-loading","state-success","state-error"].forEach(function(s){
+      document.getElementById(s).hidden = (s !== want);
+    });
+  }
   function firstName(c){
     if(!c) return "";
     var m=c.user_metadata||{}; var n=m.first_name||m.firstName||m.name||"";
