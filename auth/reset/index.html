@@ -157,7 +157,7 @@
 <script>
 (function(){
   "use strict";
-  var AUTH_BASE = "https://btlr-auth.typed.info";
+  var AUTH_BASE = "https://auth-london.btlr.vip";
 
   // Shared with /auth/confirm — tier palettes mirror BTLRThemeManager.
   var THEMES = {
@@ -276,6 +276,28 @@
       rule.textContent = String(e.message||e); rule.className="rule bad";
     });
   });
+})();
+</script>
+<script>
+// 10 Oct 2026 — the "Open BTLR" button is a btlr:// app link. On a laptop or
+// desktop there is no app to open, and Safari shows "the address is invalid".
+// When the page is not on a phone/tablet, swap each app button for a note that
+// says where to go instead. iPadOS reports itself as a Mac, so touch support
+// is what separates it from a real desktop.
+(function(){
+  var ua = navigator.userAgent || "";
+  var isIPad = /Macintosh/.test(ua) && (navigator.maxTouchPoints || 0) > 1;
+  var isMobile = /iPhone|iPad|iPod|Android/i.test(ua) || isIPad;
+  if (isMobile) return;
+  var links = document.querySelectorAll('a.cta[href^="btlr://"]');
+  for (var i = 0; i < links.length; i++) {
+    var note = document.createElement("p");
+    note.className = "hint desktop-note";
+    note.innerHTML = "Open the <strong>BTLR app on your phone</strong> and sign in there.";
+    links[i].parentNode.replaceChild(note, links[i]);
+  }
+  var hints = document.querySelectorAll("p.hint:not(.desktop-note)");
+  for (var j = 0; j < hints.length; j++) hints[j].hidden = true;
 })();
 </script>
 </body>

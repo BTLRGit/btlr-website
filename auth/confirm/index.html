@@ -127,7 +127,7 @@
 <script>
 (function(){
   "use strict";
-  var AUTH_BASE = "https://btlr-auth.typed.info"; // GoTrue
+  var AUTH_BASE = "https://auth-london.btlr.vip"; // GoTrue
 
   // Tier palettes — mirror BTLRThemeManager (standard/advanced/superior).
   var THEMES = {
@@ -223,8 +223,11 @@
     var blob=[hash.error,query.error,hash.error_code,query.error_code,
               hash.error_description,query.error_description,d].join(" ");
     var expired=/expired|otp_expired/i.test(blob);
-    fail(expired?"This link has expired.":"We couldn't confirm this link.",
-         expired?"Confirmation links are valid for a limited time. Open the BTLR app and request a new one."
+    // 10 Oct 2026: GoTrue reports an ALREADY-USED link as otp_expired too
+    // (it cannot tell them apart), and the commonest case is someone who
+    // confirmed on their phone and then opened the same email elsewhere.
+    fail(expired?"This link has expired or was already used.":"We couldn't confirm this link.",
+         expired?"If you've already confirmed your email, just sign in on the BTLR app. Otherwise, open the app and request a new link."
                 :(d?d.replace(/\+/g," "):"The link may be invalid or already used. Open the BTLR app and request a new one."));
     return;
   }
@@ -253,6 +256,28 @@
       fail("Something went wrong.","Please reopen the confirmation link from your BTLR email.");
     }
   }
+})();
+</script>
+<script>
+// 10 Oct 2026 — the "Open BTLR" button is a btlr:// app link. On a laptop or
+// desktop there is no app to open, and Safari shows "the address is invalid".
+// When the page is not on a phone/tablet, swap each app button for a note that
+// says where to go instead. iPadOS reports itself as a Mac, so touch support
+// is what separates it from a real desktop.
+(function(){
+  var ua = navigator.userAgent || "";
+  var isIPad = /Macintosh/.test(ua) && (navigator.maxTouchPoints || 0) > 1;
+  var isMobile = /iPhone|iPad|iPod|Android/i.test(ua) || isIPad;
+  if (isMobile) return;
+  var links = document.querySelectorAll('a.cta[href^="btlr://"]');
+  for (var i = 0; i < links.length; i++) {
+    var note = document.createElement("p");
+    note.className = "hint desktop-note";
+    note.innerHTML = "Open the <strong>BTLR app on your phone</strong> and sign in there.";
+    links[i].parentNode.replaceChild(note, links[i]);
+  }
+  var hints = document.querySelectorAll("p.hint:not(.desktop-note)");
+  for (var j = 0; j < hints.length; j++) hints[j].hidden = true;
 })();
 </script>
 </body>
