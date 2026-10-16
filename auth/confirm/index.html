@@ -89,6 +89,9 @@
   .cta:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
 
   .hint{margin-top:18px;font-size:13px;color:var(--muted);line-height:1.5}
+  /* 16 Oct 2026 — "Continue on the website" (account.btlr.vip), next to the app button */
+  .cta.secondary{margin-top:14px;background:transparent;color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent)}
+  .cta.secondary:hover{box-shadow:inset 0 0 0 1px var(--accent), 0 0 30px -10px var(--accent-glow)}
   .foot{margin-top:52px;font-size:11.5px;letter-spacing:.06em;color:rgba(138,148,144,.6);text-transform:uppercase}
 
   [hidden]{display:none!important}
@@ -111,6 +114,7 @@
       <h1 id="success-title">You're all set.</h1>
       <p class="sub" id="success-sub">Your BTLR account is confirmed. Return to the app and sign in to begin.</p>
       <a class="cta" id="open-app" href="btlr://login">Open BTLR</a>
+      <a class="cta secondary" href="https://account.btlr.vip">Continue on the website</a>
       <p class="hint">If the button doesn’t open the app, switch back to BTLR on your device and sign in.</p>
     </section>
 
@@ -273,7 +277,7 @@
   for (var i = 0; i < links.length; i++) {
     var note = document.createElement("p");
     note.className = "hint desktop-note";
-    note.innerHTML = "Open the <strong>BTLR app on your phone</strong> and sign in there.";
+    note.innerHTML = "Open the <strong>BTLR app on your phone</strong> and sign in there, or continue on the website.";
     links[i].parentNode.replaceChild(note, links[i]);
   }
   var hints = document.querySelectorAll("p.hint:not(.desktop-note)");
