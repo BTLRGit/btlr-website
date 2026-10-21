@@ -114,7 +114,7 @@
       <h1 id="success-title">You're all set.</h1>
       <p class="sub" id="success-sub">Your BTLR account is confirmed. Return to the app and sign in to begin.</p>
       <a class="cta" id="open-app" href="btlr://login">Open BTLR</a>
-      <a class="cta secondary" href="https://account.btlr.vip">Continue on the website</a>
+      <a class="cta secondary" id="to-website" href="https://account.btlr.vip">Continue on the website</a>
       <p class="hint">If the button doesn’t open the app, switch back to BTLR on your device and sign in.</p>
     </section>
 
@@ -200,6 +200,12 @@
       var n=firstName(claims);
       document.getElementById("success-title").innerHTML =
         n ? ('Welcome, <span class="name">'+esc(n)+'</span>.') : "You're all set.";
+      // 22 Oct 2026: carry the confirmed email to the website's sign-in field.
+      // It goes in the #fragment, which browsers never send to a server.
+      if(claims && claims.email){
+        document.getElementById("to-website").href =
+          "https://account.btlr.vip/#email=" + encodeURIComponent(String(claims.email));
+      }
     }
     show(state);
   }
