@@ -205,6 +205,12 @@
       if(claims && claims.email){
         document.getElementById("to-website").href =
           "https://account.btlr.vip/#email=" + encodeURIComponent(String(claims.email));
+        // 23 Oct 2026: and to the app's Log In screen (email filled, cursor in
+        // Password). Only the address — never a token. encodeURIComponent
+        // turns "+" into %2B so name+1@gmail.com arrives intact.
+        // (On a desktop the app button has been swapped for a note.)
+        var openApp = document.getElementById("open-app");
+        if(openApp) openApp.href = "btlr://login?email=" + encodeURIComponent(String(claims.email));
       }
     }
     show(state);
